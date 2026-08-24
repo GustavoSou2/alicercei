@@ -42,7 +42,7 @@ sem nenhum sistema de gestão hoje.
 
 ## Stack
 
-- **Frontend:** Angular 17-18, Tailwind, design system próprio
+- **Frontend:** Angular 22, Tailwind, design system próprio
   (smart-table, notifications, skeleton)
 - **Backend:** NestJS + Prisma ORM
 - **Deploy:** frontend na Vercel, API em VPS própria
