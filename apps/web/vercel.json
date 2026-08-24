@@ -1,0 +1,8 @@
+{
+  "framework": null,
+  "buildCommand": "cd ../.. && npm install && npm run build --workspace=apps/web",
+  "outputDirectory": "dist/web/browser",
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
+}

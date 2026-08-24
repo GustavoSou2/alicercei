@@ -2,6 +2,52 @@
 
 Log append-only, uma entrada por decisão real (não por tarefa).
 
+## [2026-08-24] apps/web na Vercel: buildCommand customizado + toggle manual obrigatório
+**Decisão:** `apps/web/vercel.json` define `"framework": null` e um
+`buildCommand` customizado (`cd ../.. && npm install && npm run build
+--workspace=apps/web`) em vez de deixar a Vercel autodetectar o build de
+um projeto Angular isolado, com `outputDirectory: "dist/web/browser"`
+(conferido rodando o build de verdade a partir da raiz — bate com o que
+já estava escrito).
+**Motivo:** Com Root Directory = `apps/web` (ver README/CLAUDE.md raiz,
+plano de deploy), o autodetect padrão da Vercel rodaria o build só dentro
+de `apps/web`, sem visibilidade do resto do monorepo — mas `apps/web`
+depende de `packages/ui` (via `@alicercei/ui`, path fora da Root
+Directory) e do `package-lock.json`/workspaces da raiz. O `buildCommand`
+sobe até a raiz do repo antes de instalar/buildar para resolver isso.
+**Passo manual obrigatório, não configurável via `vercel.json`:** é
+preciso habilitar manualmente, no painel do projeto na Vercel
+(Settings → Build and Deployment), a opção **"Include source files
+outside of the Root Directory in the Build Step"** — sem isso, a Vercel
+não envia `packages/ui`/`packages/config`/o `package-lock.json` da raiz
+para o ambiente de build, e o `cd ../..` do `buildCommand` encontra um
+diretório vazio/incompleto. Documentado aqui porque é fácil esquecer
+esse passo, já que ele não deixa rastro nenhum no código do repositório.
+
+## [2026-08-24] Infra local: docker-compose com paridade total (api + web + postgres)
+**Decisão:** `infra/docker-compose.yml` sobe os três serviços de
+desenvolvimento local — `postgres` (16-alpine), `api` (build via
+`apps/api/Dockerfile`, multi-stage Node 24-alpine) e `web` (build via
+`apps/web/Dockerfile`, multi-stage Node 24-alpine → servido por
+`nginx:1.27-alpine`) — com `infra/.env.example` documentando as variáveis
+necessárias (`POSTGRES_*`, `NODE_ENV`, `PORT`, `JWT_SECRET`,
+`CORS_ORIGIN`, `API_URL`). Banco confirmado como **PostgreSQL** (já
+decidido nesta sessão — ver entrada anterior sobre a escolha do banco).
+**Motivo:** Ambiente local precisa ser capaz de rodar o monorepo inteiro
+(banco + api + web) de forma reprodutível, sem depender de instalação
+manual de Postgres/Node na máquina de quem desenvolve.
+**Deploy de produção não muda:** continua `apps/web` → Vercel,
+`apps/api` → VPS própria (ver decisão de deploy split, no topo deste
+arquivo) — os Dockerfiles criados aqui são para paridade de ambiente
+local (e, no caso de `apps/api`, reaproveitáveis para a VPS depois), não
+uma mudança de estratégia de deploy do frontend.
+**Validado:** `docker compose --env-file .env config` (de dentro de
+`infra/`, com `.env` copiado de `.env.example`) parseia sem erro; o
+caminho de output do build de `apps/web` (`dist/web/browser`) foi
+conferido rodando `npm run build --workspace=apps/web` de verdade e bate
+com o que já estava escrito em `apps/web/Dockerfile`. Os containers em si
+não foram subidos nesta sessão (não pedido).
+
 ## [2026-08-24] Tailwind v4 (config-free), não tailwind.config.ts
 **Decisão:** `apps/web` usa Tailwind v4 (`@import "tailwindcss"` +
 `.postcssrc.json` + tokens via `@theme` em CSS/SCSS), não um

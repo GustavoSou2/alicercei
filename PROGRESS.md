@@ -57,6 +57,22 @@ rodando** (build/lint/test reais, não só leitura de código):
   as que exigiram sair do que o texto literal do plano previa, como
   Tailwind v4 em vez de `tailwind.config.ts`, e Prisma 7 exigindo driver
   adapter).
+- **Infra local (Docker)** — `apps/api/Dockerfile` (multi-stage,
+  Node 24-alpine), `apps/web/Dockerfile` (multi-stage → `nginx:1.27-alpine`)
+  + `apps/web/nginx.conf`, `infra/docker-compose.yml` (postgres + api +
+  web) e `infra/.env.example` criados. Caminho de build de `apps/web`
+  (`dist/web/browser`) conferido rodando o build de verdade — bate com o
+  `COPY` já escrito no Dockerfile. `docker compose --env-file .env config`
+  validado sem erro (containers não subidos). `.dockerignore` na raiz do
+  monorepo.
+- **Deploy Vercel (apps/web)** — `apps/web/vercel.json` criado
+  (`buildCommand` customizado subindo até a raiz do monorepo,
+  `outputDirectory: "dist/web/browser"`, conferido contra o build real).
+  **Pendente de ação manual, fora do código**: habilitar no painel da
+  Vercel (Settings → Build and Deployment) a opção "Include source files
+  outside of the Root Directory in the Build Step" — sem isso o build na
+  Vercel falha porque `packages/ui`/`packages/config` ficam fora do
+  Root Directory (`apps/web`). Ver DECISIONS.md.
 
 ## Em andamento
 Nenhum passo do plano em execução ativa. O que resta é bloqueado (abaixo)
