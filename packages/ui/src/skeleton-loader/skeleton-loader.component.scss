@@ -1,0 +1,25 @@
+.smart-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+
+  .skeleton-box {
+    background: linear-gradient(
+      90deg,
+      #f3f4f6 0%,
+      #e5e7eb 50%,
+      #f3f4f6 100%
+    );
+    background-size: 200% 100%;
+    animation: pulse 1.2s infinite linear;
+  }
+
+  @keyframes pulse {
+    0% {
+      background-position: 200% 0;
+    }
+    100% {
+      background-position: -200% 0;
+    }
+  }
+}

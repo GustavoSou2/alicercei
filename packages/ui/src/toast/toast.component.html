@@ -1,0 +1,18 @@
+<section id="toast" *ngIf="toasts.length > 0">
+  <div
+    *ngFor="let toast of toasts"
+    class="toast active"
+    (click)="removeToast(toast.id)"
+    [@toastAnimation]
+  >
+    <div class="toast-content">
+      <i [class]="toast.icon"></i>
+      <div class="message">
+        <span class="text text-1">{{ toast.title }}</span>
+        <span class="text text-2">{{ toast.message }}</span>
+      </div>
+    </div>
+    <i class="fa-solid fa-xmark close" (click)="removeToast(toast.id)"></i>
+    <div class="progress active"></div>
+  </div>
+</section>

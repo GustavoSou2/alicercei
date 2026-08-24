@@ -1,0 +1,62 @@
+.input-container {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  label {
+    font-size: 0.9rem;
+    color: var(--big-waterloo-400);
+  }
+
+  .field {
+    border: 1px solid var(--big-stone-200);
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: white;
+
+    &.is-disabled {
+      background-color: var(--waterloo-50);
+    }
+
+    input {
+      width: 100%;
+      font-size: 0.9rem;
+      color: #333;
+    }
+
+    &.sm {
+      padding: 0.3rem 0.7rem;
+    }
+
+    &.md {
+      padding: 0.4rem 0.8rem;
+    }
+
+    &.lg {
+      padding: 0.5rem 1rem;
+    }
+
+    &::placeholder {
+      color: var(--big-stone-600);
+    }
+  }
+
+  &.focus {
+    .field {
+      border-color: #007bff;
+    }
+  }
+
+  &.erro {
+    .field {
+      border-color: var(--burnt-sienna-700);
+    }
+
+    .error-message {
+      font-size: 0.8rem;
+      color: var(--burnt-sienna-700);
+    }
+  }
+}

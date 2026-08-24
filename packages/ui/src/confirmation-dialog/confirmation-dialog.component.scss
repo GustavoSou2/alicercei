@@ -1,0 +1,24 @@
+#confirmationDialog {
+  width: 450px;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+
+  h1 {
+    font-size: 2rem;
+  }
+
+  p.confirmationDialog--message {
+    white-space: pre-line;
+    font-size: 0.9rem;
+    color: var(--waterloo-700);
+    line-height: 1.2rem;
+  }
+
+
+  .confirmationDialog--actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+  }
+}

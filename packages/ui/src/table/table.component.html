@@ -1,0 +1,135 @@
+<section class="table--header" *ngIf="tableHeaderActions">
+  <section class="table--header-main" *ngIf="tableHeaderNew">
+    <button-custom
+      type="button"
+      size="sm"
+      [matTooltip]="'Novo'"
+      [label]="'Novo'"
+      (clicked)="handleAction('new')"
+    >
+    </button-custom>
+  </section>
+  <section class="table--header-actions">
+    <button-custom
+      type="button"
+      size="sm"
+      [matTooltip]="'Selecionar todos os items da tabela'"
+      [label]="'Selecionar todos'"
+      (clicked)="toggleSelectAll()"
+    >
+    </button-custom>
+
+    <ng-container *ngFor="let action of getAvailableActions(actionsConfig)">
+      <button-custom
+        type="button"
+        variant="transparent"
+        size="sm"
+        [label]="action.label || ACTIONS_GROUPS[action.type]"
+        [disabled]="action.disabled"
+        (clicked)="handleAction(action.type)"
+      >
+        <img
+          src="./icons/{{ action.icon }}"
+          [alt]="action.label || ACTIONS_GROUPS[action.type]"
+          button-icon
+        />
+      </button-custom>
+    </ng-container>
+  </section>
+</section>
+<section
+  class="table--container"
+  [ngClass]="{ 'dynamic-width': !tableFullWidth }"
+  [ngStyle]="{ width: tableFullWidth ? '100%' : 'max-content' }"
+>
+  <table class="table">
+    <thead>
+      <tr>
+        <th *ngIf="hasAction && actionsPosition === 'left'"></th>
+        <th *ngFor="let col of columns">
+          <div class="th-header" [style.width]="col.width">
+            {{ col.header }}
+            <img src="./icons/Info.svg" alt="" />
+          </div>
+        </th>
+        <th *ngIf="hasAction && actionsPosition === 'right'"></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let row of data | async">
+        <ng-container *ngIf="hasAction && actionsPosition === 'left'">
+          <ng-container
+            *ngTemplateOutlet="actionsRef; context: { $implicit: row }"
+          ></ng-container>
+        </ng-container>
+
+        <td *ngFor="let col of columns">
+          <ng-container *ngIf="col.loadComponent; else defaultContent">
+            <ndc-dynamic
+              [ndcDynamicComponent]="col.loadComponent"
+              [ndcDynamicInputs]="{ data: row[col.key], rowData: row }"
+            ></ndc-dynamic>
+          </ng-container>
+
+          <ng-template #defaultContent>
+            @if (!!col?.onFormatter) {
+            {{ col?.onFormatter(row[col.key], row) || "-" }}
+            } @else {
+            {{ row[col.key] || "-" }}
+            }
+          </ng-template>
+        </td>
+
+        <ng-container *ngIf="hasAction && actionsPosition === 'right'">
+          <ng-container
+            *ngTemplateOutlet="actionsRef; context: { $implicit: row }"
+          ></ng-container>
+        </ng-container>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<ng-template #actionsRef let-row>
+  <td *ngIf="hasAction">
+    <div class="table--actions">
+      <ng-container *ngIf="!!tableSelectMultipleRows">
+        <input
+          type="checkbox"
+          [id]="'checkbox-' + row.id"
+          [name]="'checkbox'"
+          [style.display]="'none'"
+          [checked]="selectedRows.includes(row.id)"
+          (change)="toggleSelection(row.id)"
+        />
+
+        <label
+          [for]="'checkbox-' + row.id"
+          class="checkbox"
+          [ngClass]="{ 'chekbox-checked': selectedRows.includes(row.id) }"
+        ></label>
+      </ng-container>
+
+      <ng-container *ngFor="let action of actions">
+        <ng-container
+          *ngIf="(!!action?.hidden && !action?.hidden(row)) || !action?.hidden"
+        >
+          <ng-container *ngIf="action.loadComponent; else buttonAction">
+            <ng-container #vcAction></ng-container>
+          </ng-container>
+        </ng-container>
+
+        <ng-template #buttonAction>
+          <button-custom
+            *ngIf="action.icon"
+            type="button"
+            variant="transparent"
+            (clicked)="action?.onClick(row)"
+          >
+            <img [src]="'./icons/' + action.icon" alt="icone" button-icon />
+          </button-custom>
+        </ng-template>
+      </ng-container>
+    </div>
+  </td>
+</ng-template>

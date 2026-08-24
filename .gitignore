@@ -1,0 +1,24 @@
+# Dependências (hoisted pelos workspaces do npm na raiz)
+node_modules/
+
+# Build output de qualquer app/package
+dist/
+build/
+/apps/*/generated/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Env locais — nunca commitados
+.env
+.env.local
+.env.*.local
+
+# OS / editores
+.DS_Store
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json

@@ -1,0 +1,20 @@
+<div class="tabs">
+  <div class="tab-headers">
+    <button
+      *ngFor="let tab of tabs; let i = index"
+      [class.active]="i === selectedIndex"
+      (click)="selectTab(i)"
+      class="tab-header--button"
+    >
+      {{ tab.title }}
+    </button>
+  </div>
+  <div class="tab-content" [@slideAnimation]="getAnimationParams()">
+    <ng-container *ngIf="tabs[selectedIndex]">
+      <ndc-dynamic
+        [ndcDynamicComponent]="tab.component"
+        [ndcDynamicInputs]="{ data: tab?.data ?? {} }"
+      ></ndc-dynamic>
+    </ng-container>
+  </div>
+</div>

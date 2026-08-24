@@ -1,0 +1,64 @@
+.calendar-container {
+  max-width: 100%;
+  margin: auto;
+  padding: 1rem;
+  border-radius: 1rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  font-family: 'Segoe UI', sans-serif;
+
+  .calendar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 1.2rem;
+    font-weight: bold;
+    margin-bottom: 1rem;
+
+    button {
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      cursor: pointer;
+    }
+  }
+
+  .calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 0.5rem;
+
+    .day-name {
+      text-align: center;
+      font-weight: bold;
+    }
+
+    .day-cell {
+      padding: 0.5rem;
+      background-color: #f9f9f9;
+      border-radius: 0.5rem;
+      cursor: pointer;
+      text-align: center;
+      transition: background-color 0.2s ease;
+
+      &:hover {
+        background-color: #e0e0e0;
+      }
+
+      .day-number {
+        font-weight: bold;
+      }
+
+      .event-badge {
+        margin-top: 4px;
+        padding: 2px 4px;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        color: #fff;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        cursor: pointer;
+      }
+    }
+  }
+}

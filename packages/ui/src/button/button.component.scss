@@ -1,0 +1,78 @@
+button {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: 0.3s ease-in-out;
+
+  &.disabled {
+    background-color: var(--waterloo-200);
+    cursor: not-allowed;
+  }
+}
+
+.button-custom--primary {
+  background-color: var(--royal-blue-600);
+  color: white;
+}
+
+.button-custom--secondary {
+  background-color: var(--waterloo-500);
+  color: white;
+}
+
+.button-custom--danger {
+  background-color: #dc3545;
+  color: white;
+}
+
+.button-custom--transparent {
+  background-color: transparent;
+  color: var(--waterloo-600);
+
+  &:hover {
+    opacity: 0.6;
+  }
+}
+
+.button-custom--success {
+  background-color: #10ac84;
+  color: white;
+}
+
+.button-custom--disabled {
+  background-color: var(--waterloo-100);
+  color: var(--waterloo-600);
+}
+
+.button-custom--sm {
+  padding: 0.35rem 0.55rem;
+
+  span {
+    font-size: 0.8rem;
+  }
+}
+
+.button-custom--md {
+  padding: 0.45rem 0.65rem;
+  span {
+    font-size: 0.9rem;
+  }
+}
+
+.button-custom--lg {
+  padding: 0.55rem 0.75rem;
+  span {
+    font-size: 1rem;
+  }
+}
+
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

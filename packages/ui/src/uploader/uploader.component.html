@@ -1,0 +1,38 @@
+<section id="uploader">
+  <section class="uploader">
+    <label class="uploader--label">Upload de arquivos</label>
+    <label [for]="id" class="file-uploader">
+      <img src="./icons/Export.svg" alt="Icone de exportar" />
+    </label>
+  </section>
+  <input
+    type="file"
+    [attr.accept]="accept"
+    [attr.multiple]="multiple ? '' : null"
+    (change)="onFileSelected($event)"
+    [style.display]="'none'"
+    [disabled]="isDisabled$ | async"
+    [name]="name"
+    [id]="id"
+  />
+  <div class="uploader--files" *ngIf="multiple">
+    <div *ngFor="let name of fileNames" class="uploader--file-card">
+      <div class="file-card--extension-square">
+        {{ fileNames[0].fileExtension | uppercase }}
+      </div>
+      <div class="file-card--info">
+        <h3>{{ fileNames[0].fileName }}</h3>
+        <small>{{ fileNames[0].size }}</small>
+      </div>
+    </div>
+  </div>
+  <div *ngIf="!multiple && fileNames.length" class="uploader--file-card">
+    <div class="file-card--extension-square">
+      {{ fileNames[0].fileExtension | uppercase }}
+    </div>
+    <div class="file-card--info">
+      <h3>{{ fileNames[0].fileName }}</h3>
+      <small>{{ fileNames[0].size }}</small>
+    </div>
+  </div>
+</section>

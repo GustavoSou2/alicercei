@@ -1,0 +1,20 @@
+// Schema intencionalmente sem modelos ainda.
+//
+// O schema de domínio (Orçamento/Execução/Projeto) nasce do TO-BE, não do
+// legado — ver PLANO-EXECUCAO.md passo 4.1 e AS-IS-api.md seção 2. Está
+// bloqueado até a entrevista de AS-IS real com o pai do usuário (ver
+// PROGRESS.md, "Bloqueado por"). Não copiar nenhum model de
+// legado/alicerce-api/prisma/schema.prisma.
+
+// "prisma-client" (o novo gerador default do Prisma 7) emite ESM puro
+// (usa import.meta.url), incompatível com o build CommonJS do Nest CLI
+// neste projeto — ficou "exports is not defined in ES module scope" ao
+// rodar dist/. "prisma-client-js" é o gerador clássico, CJS-safe, mesmo
+// usado pelo legado.
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}

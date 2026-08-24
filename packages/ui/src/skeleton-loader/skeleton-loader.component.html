@@ -1,0 +1,18 @@
+<ng-container *ngIf="!loading; else skeletonTemplate">
+  <ng-content></ng-content>
+</ng-container>
+
+<ng-template #skeletonTemplate>
+  <div class="smart-skeleton">
+    <ng-container *ngFor="let skeleton of skeletons">
+      <div
+        class="skeleton-box"
+        [ngStyle]="{
+          width: skeleton.width,
+          height: skeleton.height,
+          borderRadius: skeleton.radius
+        }"
+      ></div>
+    </ng-container>
+  </div>
+</ng-template>

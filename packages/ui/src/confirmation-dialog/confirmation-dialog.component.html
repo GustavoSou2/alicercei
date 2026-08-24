@@ -1,0 +1,22 @@
+<section id="confirmationDialog">
+  <h1>{{ title }}</h1>
+  @if (!!messageHTML) {
+  <p class="confirmationDialog--message" [innerHTML]="messageHTML"></p>
+  } @else {
+  <p class="confirmationDialog--message">{{ message }}</p>
+  }
+  <section class="confirmationDialog--actions">
+    <button-custom
+      type="button"
+      [label]="cancelButton.text || 'Cancelar'"
+      [variant]="cancelButton.color || 'transparent'"
+      (clicked)="cancel()"
+    ></button-custom>
+    <button-custom
+      type="button"
+      [label]="confirmButton.text || 'Confirmar'"
+      [variant]="confirmButton.color || 'primary'"
+      (clicked)="confirm()"
+    ></button-custom>
+  </section>
+</section>

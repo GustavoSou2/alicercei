@@ -1,0 +1,42 @@
+/* Estilos globais do app. */
+
+@use "@angular/material" as mat;
+
+@include mat.core();
+
+@import "tailwindcss";
+
+// packages/ui vive fora de src/ (fora da raiz que o Tailwind varre por
+// padrão) — sem isso, o build remove em produção qualquer classe usada só
+// dentro do design system (purge). Ver PLANO-EXECUCAO.md, passo 5.
+@source "../../packages/ui/src";
+
+// Tema do Angular Material — necessário porque componentes extraídos para
+// packages/ui usam MatDialog/MatTooltip (ex.: confirmation-dialog, table).
+$alicercei-theme: mat.define-theme(
+  (
+    color: (
+      theme-type: light,
+      primary: mat.$azure-palette,
+      tertiary: mat.$blue-palette,
+    ),
+    density: (
+      scale: 0,
+    ),
+  )
+);
+
+:root {
+  @include mat.all-component-themes($alicercei-theme);
+}
+
+@import "./assets/scss/colors.global";
+@import "./assets/scss/fontes.global";
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+
+  font-family: "Poppins", sans-serif;
+}
