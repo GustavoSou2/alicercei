@@ -20,7 +20,7 @@ services:
       NODE_ENV: ${NODE_ENV}
       PORT: ${PORT}
       JWT_SECRET: ${JWT_SECRET}
-      CORS_ORIGIN: ${CORS_ORIGIN}
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS}
       DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
     ports:
       - "3000:3000"

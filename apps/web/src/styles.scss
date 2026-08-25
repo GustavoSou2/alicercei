@@ -9,7 +9,7 @@
 // packages/ui vive fora de src/ (fora da raiz que o Tailwind varre por
 // padrão) — sem isso, o build remove em produção qualquer classe usada só
 // dentro do design system (purge). Ver PLANO-EXECUCAO.md, passo 5.
-@source "../../packages/ui/src";
+@source "../../../packages/ui/src";
 
 // Tema do Angular Material — necessário porque componentes extraídos para
 // packages/ui usam MatDialog/MatTooltip (ex.: confirmation-dialog, table).
@@ -39,4 +39,25 @@ $alicercei-theme: mat.define-theme(
   box-sizing: border-box;
 
   font-family: "Poppins", sans-serif;
+}
+
+// Cor de texto padrão herdada por qualquer componente (design system ou
+// tela) sem precisar declarar `color` manualmente. Valores herdados do
+// uso real do legado, não da configuração declarada: `waterloo-600` é a
+// cor de texto de corpo/parágrafo mais usada em `legado/whale-ui` (>40
+// ocorrências em contextos de texto secundário/data/parágrafo);
+// `waterloo-800` é a cor consistentemente usada em títulos/headings. Ver
+// DECISIONS.md para a análise completa (não havia essa herança global no
+// legado — cada componente repetia a cor manualmente).
+body {
+  color: var(--waterloo-600);
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  color: var(--waterloo-800);
 }

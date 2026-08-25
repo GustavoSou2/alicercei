@@ -2,6 +2,150 @@
 
 Log append-only, uma entrada por decisão real (não por tarefa).
 
+## [2026-08-25] Investigação: nenhum modificador de alpha dinâmico (`bg-${cor}/${valor}`) em packages/ui
+**Pedido do usuário:** atenção específica a um sub-caso do bug de `@source`/
+purge já corrigido (ver entrada abaixo) — classes Tailwind com modificador
+de opacidade construído via variável (ex.: `bg-teal-600/${opacity}`), que
+passam despercebidas do mesmo problema mesmo quando o resto da classe é
+escrito de forma literal, porque o scanner de conteúdo do Tailwind não
+resolve a parte interpolada.
+**Verificado:** busca por `${...}` combinado com prefixos de utilitário
+Tailwind (`bg-`, `text-`, `border-`, `ring-`, `from-`, `via-`, `to-`, etc.)
+em todo `.ts`/`.html`/`.scss` de `packages/ui/src`. **Nenhuma ocorrência
+encontrada:**
+- Todo `${...}` existente em `.ts` é classe BEM própria do componente
+  (`avatar--${size()}`, `button-custom--${variant()}`), valor de pixel
+  (`${width}px`) ou texto de mensagem — nenhum monta nome de utilitário
+  Tailwind.
+- `[ngClass]`/`[class]` nos templates resolvem para essas mesmas classes
+  BEM (`avatarSize`, `buttonClass`, `iconClass`), não para utilitários
+  Tailwind.
+- Nenhum `@apply` nem interpolação SCSS (`#{$var}`) em nenhum `.scss` do
+  pacote.
+**Motivo de registrar um achado negativo:** é o mesmo tipo de bug de purge
+silencioso (Tailwind não avisa, só deixa de gerar a classe) já encontrado
+nesta sessão via `@source` incorreto — registrar a verificação evita que
+alguém repita essa mesma investigação depois, e marca que esse vetor
+específico está limpo hoje. Se um componente futuro precisar de opacidade
+dinâmica, a forma seguindo o purge de produção é escrever cada combinação
+inteira por extenso (ex. via `class:`/`[ngClass]` mapeando cada variante
+para uma classe completa), nunca interpolar string dentro do nome da
+classe.
+
+## [2026-08-25] Investigação: tailwind.config.js vazio/órfão — @theme prevalece, sem conflito real
+**Achado (investigação, não presumida):** `apps/web/package.json` tem
+`tailwindcss@^4.3.3` (v4 confirmado; subiu de `^4.1.8` por resolução de
+`^` normal do npm, não é uma troca deliberada). Existe um
+`apps/web/tailwind.config.js` no working tree — **não foi criado por
+nenhuma etapa registrada neste log**, está com **0 bytes**, sem entrada
+no git (`??`, sem histórico). Confirmado via build real (`ng build`) e
+inspeção do CSS gerado: nenhum warning/erro menciona esse arquivo, e o
+Tailwind v4 só carrega um config JS legado se houver uma diretiva
+`@config "caminho";` explícita em algum CSS — não existe nenhuma em
+`src/styles.scss` nem em nenhum outro `.scss` do app. Ou seja, esse
+arquivo está **inerte hoje**: não é lido pelo pipeline de build, não
+compete com o `@theme` de `_colors.global.scss`, não há conflito real
+para arbitrar.
+**Decisão sobre qual fonte prevalece:** `@theme` em
+`src/assets/scss/_colors.global.scss` (importado por `src/styles.scss`)
+é a **única fonte de tokens de tema** deste projeto. Se um
+`tailwind.config.js` ganhar conteúdo no futuro, ele só passa a valer se
+alguém adicionar `@config` apontando pra ele — nesse momento, os dois
+teriam que ser reconciliados explicitamente (Tailwind v4 deixa o config
+JS coexistir com `@theme`, mas quem for mexer nisso precisa saber que
+`@theme` é hoje a fonte de verdade, não um "extra"). Não removido nesta
+sessão porque não foi criado nesta sessão nem por este agente — reportado
+para o usuário decidir se apaga o arquivo órfão.
+
+## [2026-08-25] Bug real encontrado: `@source` apontava para caminho inexistente
+**Achado (via teste real, não só configuração escrita):** A verificação
+anterior (sessão passada) de que classes usadas só em `packages/ui`
+sobrevivem ao build de produção **não provava o que dizia provar** — o
+teste anterior colocava a classe de teste dentro de `apps/web/src/app/
+app.html` (sempre varrido por padrão, independente do `@source`) ou,
+pior, um comentário em `_colors.global.scss` continha o texto literal de
+nomes de classe completos (`bg-tropaz-500`, `text-cornflower-300`) — o
+scanner do Tailwind v4 é baseado em regex sobre texto bruto de qualquer
+arquivo varrido, **inclusive comentários**, então essas classes apareciam
+no CSS final mesmo sem nenhum uso real dentro de `packages/ui`. Um teste
+rigoroso agora (classe real `bg-emerald-700 text-tranquil-200
+rounded-3xl` inserida de verdade em `packages/ui/src/avatar/
+avatar.component.html`, revertida depois) **falhou** com a configuração
+anterior: `@source "../../packages/ui/src";` em `apps/web/src/
+styles.scss` resolve, a partir de `apps/web/src/`, para
+`apps/web/packages/ui/src` — um diretório que **não existe** (faltava um
+`../`; `packages/ui` é irmão de `apps/`, não de `apps/web/src/..`).
+Tailwind não avisa quando um `@source` aponta para um caminho
+inexistente, só encontra zero arquivos ali e segue em frente — por isso
+o erro não apareceu em nenhum warning/build anterior.
+**Corrigido:** `@source "../../../packages/ui/src";` (três níveis acima
+de `apps/web/src/` até a raiz do monorepo, depois `packages/ui/src`).
+**Reverificado com teste positivo E negativo**: classe real em
+`packages/ui` sobrevive ao build depois do fix; depois de remover a
+classe de teste E os dois textos de comentário/doc que continham nomes
+de classe completos por extenso (`_colors.global.scss` e
+`apps/web/CLAUDE.md`, ambos ajustados para descrever o padrão
+`bg-{cor}-{escala}` em vez de escrever a classe inteira), o build limpo
+(cache `.angular` apagado) **não** contém mais nenhuma dessas classes —
+prova de que o purge de produção agora funciona de verdade para
+`packages/ui`, não só na config escrita.
+**Motivo de registrar isso com tanto detalhe:** a sessão anterior já
+tinha declarado esse mesmo teste como "validado" em uma entrada anterior
+deste arquivo — essa validação estava errada. Fica registrado aqui para
+quem for confiar em testes de purge no futuro saber que o scanner do
+Tailwind v4 pega qualquer string de texto bruto (inclusive prosa/
+comentário), então "a classe aparece no CSS" só é prova de uso real se o
+texto de teste não existir em nenhum outro lugar varrido (docs,
+comentários, etc.) — e que caminho de `@source` errado falha em
+silêncio, não em erro.
+
+## [2026-08-25] Cor/tipografia global aplicada a partir do uso real do legado, não da config declarada
+**Investigação (uso real, não configuração declarada):** análise
+estatística de todos os `.scss` de `legado/whale-ui/src` (não só o
+design system, também telas/módulos de domínio, para capturar o estilo
+de fato aplicado):
+- **Cor de texto:** não existe um `color` global no legado (o reset
+  `* {}` de `styles.scss` não define `color`) — cada componente repete a
+  cor manualmente. `var(--waterloo-600)` é a cor de texto mais usada de
+  longe (46+ ocorrências diretas, típico em parágrafo/data/texto
+  secundário); `var(--waterloo-800)` é a cor consistentemente usada em
+  títulos/headings (amostrado em `h1-h4`/`.title`/`.heading` de vários
+  módulos). `big-stone-*` aparece como segunda família mais comum, mas
+  sem o mesmo padrão consistente de "corpo vs. título" que `waterloo`
+  tem.
+- **Achado à parte (não portado):** `var(--indigo-*)` e
+  `var(--shuttle-gray-*)` aparecem usados em alguns componentes
+  (`card`, `notification`, telas de `account`) mas **nunca são
+  definidos** em nenhum `.scss` do legado — são custom properties
+  quebradas/mortas (resolvem pra nada em runtime). Nenhum desses
+  componentes está entre os extraídos para `packages/ui` (são 🔴/🟡 no
+  AS-IS-web.md), então isso não afeta o design system novo, só fica
+  registrado como achado de auditoria.
+- **Espaçamento:** `gap`/`padding` reais concentram em `0.5rem` (8px),
+  `1rem` (16px), `1.5rem` (24px), `2rem` (32px) — bate quase exatamente
+  com a escala default do Tailwind v4 (`spacing` base 4px:
+  2=8px/4=16px/6=24px/8=32px). **Nenhum token de espaçamento customizado
+  foi criado** — o default do Tailwind já reflete o uso real, sobrescrever
+  seria inventar uma escala paralela sem necessidade.
+- **Border-radius:** valores reais concentram em 4px, 6px, 8px, 12px,
+  24px, 50% (círculos/avatar) — também próximo o suficiente da escala
+  default do Tailwind v4 (`--radius-sm/md/lg/xl` ≈ 4/6/8/12px,
+  `rounded-full` para círculo). **Não sobrescrito** pelo mesmo motivo do
+  espaçamento; os componentes já extraídos para `packages/ui` mantêm seu
+  `border-radius` explícito por componente (herdado do legado tal como
+  estava).
+- **Sombra:** **não existe um token de sombra reutilizado** no legado —
+  cada `box-shadow` encontrado é um valor único, específico do
+  componente (dropdown, modal, etc.), sem repetição suficiente para
+  extrair um padrão. Não foi criado nenhum token de sombra por não haver
+  um real para portar.
+**Aplicado:** `body { color: var(--waterloo-600); }` e `h1..h6 { color:
+var(--waterloo-800); }` em `apps/web/src/styles.scss` — agora qualquer
+tela ou componente herda a cor de texto certa por padrão, sem precisar
+declarar `color` manualmente (correção sobre o próprio legado, que nunca
+teve essa herança global e repetia a cor em cada componente). Fonte
+global (`Poppins`) já estava aplicada desde o passo 5 original.
+
 ## [2026-08-24] apps/web na Vercel: buildCommand customizado + toggle manual obrigatório
 **Decisão:** `apps/web/vercel.json` define `"framework": null` e um
 `buildCommand` customizado (`cd ../.. && npm install && npm run build
@@ -57,9 +201,13 @@ não foram subidos nesta sessão (não pedido).
 no `package.json`, sem nenhum `tailwind.config.*` no repositório) — v4
 não usa mais arquivo de config JS/TS por padrão. O equivalente ao
 `content` (garantir que classes usadas só em `packages/ui` não sejam
-purgadas) é a diretiva `@source "../../packages/ui/src";` em
-`src/styles.scss` — testado de verdade (classe `bg-tropaz-500` referenciada
-num template, build de produção, confirmado no CSS gerado).
+purgadas) é a diretiva `@source` em `src/styles.scss`.
+**Correção (2026-08-25):** o caminho escrito originalmente aqui
+(`../../packages/ui/src`) estava errado (faltava um nível — resolvia para
+um diretório inexistente) e o "teste" descrito nesta entrada não provava
+o que dizia provar. Ver entrada "Bug real encontrado: `@source` apontava
+para caminho inexistente" (2026-08-25) para o path correto
+(`../../../packages/ui/src`) e a verificação de verdade.
 **Tokens portados:** paleta de cor completa de
 `legado/whale-ui/src/assets/scss/_colors.global.scss` (9 cores, escalas
 50–950) e o `@import` de fontes do Google

@@ -4,7 +4,6 @@ WORKDIR /repo
 FROM base AS build
 COPY package.json package-lock.json ./
 COPY apps/api/package.json apps/api/package.json
-COPY packages/config/package.json packages/config/package.json
 RUN npm ci
 COPY . .
 RUN npx prisma generate --schema=apps/api/prisma/schema.prisma
@@ -20,4 +19,4 @@ COPY --from=build /repo/apps/api/prisma ./apps/api/prisma
 COPY --from=build /repo/apps/api/package.json ./apps/api/package.json
 
 EXPOSE 3000
-CMD ["node", "apps/api/dist/main.js"]
+CMD ["node", "apps/api/dist/src/main.js"]

@@ -138,8 +138,12 @@ $themeColors: (
 }
 
 // Mesma paleta, exposta também como tokens `--color-*` do Tailwind v4
-// (`@theme`), para gerar utilitários (`bg-tropaz-500`, `text-cornflower-300`,
-// ...) além das variáveis CSS soltas que os componentes já usam.
+// (`@theme`), para gerar utilitários de background/texto/borda por cor e
+// escala, além das variáveis CSS soltas que os componentes já usam.
+// (Evitar escrever aqui um nome de classe utilitária completo tipo
+// "bg-COR-NUMERO" em texto solto — o scanner do Tailwind v4 é baseado em
+// regex sobre qualquer arquivo varrido, inclusive comentários, e passa a
+// "achar" a classe mesmo sem uso real, mascarando um teste de purge.)
 @theme {
   @each $color, $shades in $themeColors {
     @each $shade, $value in $shades {
