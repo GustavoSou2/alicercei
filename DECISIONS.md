@@ -2,6 +2,30 @@
 
 Log append-only, uma entrada por decisão real (não por tarefa).
 
+## [2026-08-25] Autenticação completa com múltiplos usuários decidida para a v1
+**Decisão:** A v1 do Alicercei nasce com registro de usuário, login, e
+suporte a múltiplos usuários por empresa (`Company`/`User` como
+entidades separadas desde o início) — não mais "usuário único, sem tela
+de login" como `alicercei-to-be.md`, seção 5, registrava até aqui.
+Papéis granulares/permissões finas continuam fora da v1: todo usuário
+registrado tem acesso completo aos dados da própria empresa.
+**Motivo:** Decisão consciente do responsável pelo projeto, não uma
+suposição de quem especifica. `alicercei-to-be.md` seção 5 registrava a
+existência de um segundo usuário (o filho, que às vezes formaliza o
+orçamento à noite) como "decisão em aberto, não resolvida ainda —
+perguntar diretamente na próxima conversa", com a v1 assumindo usuário
+único só até essa resposta chegar. Essa resposta chegou: multiusuário
+entra na v1. Isso também resolve, como efeito direto, a pergunta em
+aberto registrada em `PROGRESS.md` sobre a existência de um model
+`Company`/`Tenant` próprio — agora existe, porque o isolamento por
+`companyId` (já exigido desde antes) precisa de uma entidade real para
+representar a empresa por trás do token de cada usuário.
+**Efeito nas specs:** nova spec `specs/00b-autenticacao.md`, inserida
+antes de `01-orcamento-rapido.md` na ordem de implementação;
+`specs/00-schema-inicial.md` atualizada para incluir `Company`/`User`
+desde o início; `specs/README.md` atualizado com a nova ordem e
+dependências.
+
 ## [2026-08-25] Investigação: nenhum modificador de alpha dinâmico (`bg-${cor}/${valor}`) em packages/ui
 **Pedido do usuário:** atenção específica a um sub-caso do bug de `@source`/
 purge já corrigido (ver entrada abaixo) — classes Tailwind com modificador

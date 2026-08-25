@@ -37,9 +37,10 @@ inteiro, deixando claro que algo mudou desde a criação.
   dentro de uma transação junto com a atualização do item —
   `apps/api/CLAUDE.md`, "Banco de dados e performance de query"
   (`$transaction`).
-- Resposta de erro ao tentar aprovar orçamento vencido segue o formato
-  de erro documentado (e ainda em conflito, não resolvido) em
-  `apps/api/CLAUDE.md`, "Erros e resposta".
+- Resposta de erro ao tentar aprovar orçamento vencido segue Problem
+  Details (RFC 7807) — pendência técnica de corrigir o
+  `AllExceptionsFilter` para esse formato, registrada na spec 00b (ver
+  nota lá; não é decidida de novo aqui).
 - Tela mostra loading/error/empty e usa Signals/OnPush —
   `apps/web/CLAUDE.md`, "Performance"/"Resiliência de UI".
 
@@ -97,10 +98,10 @@ campos já existentes:
 Response `200` (sucesso): `{ "status": "APPROVED", "approvedAt": "string ISO 8601" }`
 
 Response erro (quando `isExpired = true` no momento da aprovação): `409
-Conflict`, corpo no formato de erro vigente (ver nota no spec 01 sobre o
-conflito Problem Details ainda não resolvido), mensagem indicando que o
-orçamento venceu e precisa de reprecificação/nova validade antes de
-aprovar.
+Conflict`, corpo em Problem Details (ver nota no spec 00b sobre a
+pendência de corrigir o `AllExceptionsFilter` para esse formato),
+mensagem indicando que o orçamento venceu e precisa de reprecificação/
+nova validade antes de aprovar.
 
 ## Escopo negativo
 

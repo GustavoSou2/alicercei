@@ -1,10 +1,6 @@
-// Schema intencionalmente sem modelos ainda.
-//
-// O schema de domínio (Orçamento/Execução/Projeto) nasce do TO-BE, não do
-// legado — ver PLANO-EXECUCAO.md passo 4.1 e AS-IS-api.md seção 2. Está
-// bloqueado até a entrevista de AS-IS real com o pai do usuário (ver
-// PROGRESS.md, "Bloqueado por"). Não copiar nenhum model de
-// legado/alicerce-api/prisma/schema.prisma.
+// Schema de domínio — nasce do TO-BE validado com o caso fundador, não do
+// legado (ver specs/00-schema-inicial.md; não copiar nenhum model de
+// legado/alicerce-api/prisma/schema.prisma).
 
 // "prisma-client" (o novo gerador default do Prisma 7) emite ESM puro
 // (usa import.meta.url), incompatível com o build CommonJS do Nest CLI
@@ -17,4 +13,103 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+}
+
+enum ProjectStatus {
+  ACTIVE
+  CLOSED
+}
+
+enum BudgetStatus {
+  DRAFT
+  SENT
+  APPROVED
+  REJECTED
+}
+
+enum ExecutionStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  COMPLETED
+}
+
+enum PaymentStatus {
+  PENDING
+  RECEIVED
+}
+
+model Company {
+  id                        String    @id @default(uuid())
+  name                      String
+  joinCode                  String    @unique
+  savedCashBalance          Decimal?
+  savedCashBalanceUpdatedAt DateTime?
+  createdAt                 DateTime  @default(now())
+  users                     User[]
+  projects                  Project[]
+  budgets                   Budget[]
+
+  @@index([joinCode])
+}
+
+model User {
+  id           String   @id @default(uuid())
+  companyId    String
+  name         String
+  email        String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
+  company      Company  @relation(fields: [companyId], references: [id])
+
+  @@index([companyId])
+}
+
+model Project {
+  id                 String          @id @default(uuid())
+  companyId          String
+  clientName         String
+  clientContact      String?
+  serviceDescription String
+  status             ProjectStatus   @default(ACTIVE)
+  executionStatus    ExecutionStatus @default(NOT_STARTED)
+  paymentStatus      PaymentStatus   @default(PENDING)
+  createdAt          DateTime        @default(now())
+  closedAt           DateTime?
+  company            Company         @relation(fields: [companyId], references: [id])
+  budgets            Budget[]
+
+  @@index([companyId])
+}
+
+model Budget {
+  id            String       @id @default(uuid())
+  companyId     String
+  projectId     String
+  publicSlug    String       @unique
+  status        BudgetStatus @default(DRAFT)
+  markupPercent Decimal      @default(20)
+  validUntil    DateTime
+  totalAmount   Decimal      @default(0)
+  createdAt     DateTime     @default(now())
+  sentAt        DateTime?
+  approvedAt    DateTime?
+  company       Company      @relation(fields: [companyId], references: [id])
+  project       Project      @relation(fields: [projectId], references: [id])
+  items         BudgetItem[]
+
+  @@index([companyId])
+  @@index([projectId])
+}
+
+model BudgetItem {
+  id                String    @id @default(uuid())
+  budgetId          String
+  description       String
+  quantity          Decimal
+  unitPrice         Decimal
+  originalUnitPrice Decimal?
+  repricedAt        DateTime?
+  budget            Budget    @relation(fields: [budgetId], references: [id])
+
+  @@index([budgetId])
 }

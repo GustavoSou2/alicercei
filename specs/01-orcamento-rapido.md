@@ -37,9 +37,9 @@ na hora.
   empresa'". `Project.status = ACTIVE`, `Budget.status = DRAFT` desde a
   criação.
 - Toda query de domínio filtra por `companyId` — `apps/api/CLAUDE.md`,
-  "Autenticação e multi-tenancy". Ver spec 00, "Decisão pendente" — de
-  onde vem o `companyId` do request ainda não está resolvido; esta spec
-  não pode ser implementada antes daquela decisão.
+  "Autenticação e multi-tenancy". `companyId` vem do JWT emitido no
+  login/registro (spec 00b) — esta spec depende de 00b estar
+  implementada antes.
 - Tela: `OnPush` + Signals, os três estados (loading/error/empty — aqui
   "empty" não se aplica a um formulário de criação, mas o estado de erro
   de submit sim), estrutura por feature (`src/app/orcamentos/` ou
@@ -101,11 +101,14 @@ Response `201`:
 }
 ```
 
-Erro (400/422) segue o formato já documentado em `apps/api/CLAUDE.md`,
-"Erros e resposta" — que hoje é o formato Nest default
-(`statusCode`/`message`/`error`), não Problem Details ainda (conflito
-registrado, não resolvido). Esta spec usa o formato que estiver valendo
-no momento da implementação, não decide isso de novo.
+Erro (400/422): Problem Details (RFC 7807) é o formato correto adotado
+a partir de agora — o `AllExceptionsFilter` hoje produz o formato Nest
+default (`statusCode`/`message`/`error`), não Problem Details; é o
+filtro que precisa ser corrigido, não o formato-alvo que muda (pendência
+técnica registrada na spec 00b, a primeira a tocar erro de negócio de
+verdade). Esta spec não corrige o filtro — usa o que estiver valendo no
+momento da implementação, seguindo o que já tiver sido ajustado em 00b
+(ou ajustando aqui, se 01 for implementada antes por algum motivo).
 
 `validUntil` é coletado aqui (campo existe desde a criação) mas seu
 **comportamento** (aviso de expirado, bloqueio de aprovação) é
@@ -120,12 +123,12 @@ responsabilidade da spec 03, não desta.
 - Não inclui múltiplos orçamentos por projeto (revisão de orçamento) —
   o schema permite (`Project.budgets: Budget[]`), mas esta spec só cria
   o primeiro.
-- Não inclui autenticação/tela de login — depende da decisão pendente na
-  spec 00.
+- Não inclui autenticação/tela de login — spec 00b, dependência desta.
 - Não inclui categorização de item (material vs. mão de obra) — TO-BE
   não pede isso para a v1, item é só descrição+quantidade+preço.
 
 ## Dependências
 
-- Spec 00 (schema inicial) — e a decisão pendente ali sobre origem do
-  `companyId`/autenticação, que bloqueia esta spec especificamente.
+- Spec 00 (schema inicial).
+- Spec 00b (autenticação) — `companyId` do request vem do JWT emitido
+  ali; esta spec não pode ser implementada antes dela.
